@@ -26,6 +26,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "3.2.3",
+    "elastic-apm-node": "^3.37.0",
     "lodash.clonedeep": "^4.5.0",
     "lru-cache": "^7.10.1"
   },
