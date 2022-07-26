@@ -1574,6 +1574,7 @@ describe("caching", function() {
                         }, 500);
                     });
                 });
+
                 it.skip("should not utilize TTS without refreshThreshold", function(done) {
                     var funcCalled = false;
                     cache.wrap(key, function(cb) {
@@ -1594,27 +1595,8 @@ describe("caching", function() {
                         }, 500);
                     });
                 });
-                it.skip("should not return cached item when stale refresh attempt fails", function(done) {
-                    var funcCalled = false;
-                    cache.wrap(key, function(cb) {
-                        funcCalled = true;
-                        methods.getWidget(name, function(err, result) {
-                            cb(err, result);
-                        });
-                    }, function(err, widget) {
-                        // Wait for just a bit, to be sure that the callback is called.
-                        setTimeout(function() {
-                            checkErr(err);
-                            assert.deepEqual(widget, {name: name});
-                            assert.ok(memoryStoreStub.get.calledWith(key));
-                            assert.ok(memoryStoreStub.ttl.calledWith(key));
-                            assert.equal(funcCalled, true);
-                            assert.equal(memoryStoreStub.set.callCount, 1);
-                            done();
-                        }, 500);
-                    });
-                });
-                it.skip("should not return stale refresh error when attempt to fulfill via cache fails", function(done) {
+
+                it.skip("should return cached item when stale refresh attempt fails", function(done) {
                     var funcCalled = false;
                     cache.wrap(key, function(cb) {
                         funcCalled = true;
