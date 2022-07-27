@@ -1,7 +1,7 @@
 BASE = .
 
 NYC = ./node_modules/.bin/nyc
-COVERAGE_OPTS = --lines 99 --statements 95 --branches 90 --functions 95
+COVERAGE_OPTS = --lines 90 --statements 90 --branches 90 --functions 95
 
 main: lint test docs
 
