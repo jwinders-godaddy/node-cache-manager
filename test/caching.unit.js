@@ -1900,7 +1900,62 @@ describe("caching", function() {
                         });
                     });
             });
+            context("With TTS and subsequent attempt to refresh cache fails, as does cache get", function() {
+                function ttl2(key, cb) {
+                    console.log('called TTL2 :>> ');
+                    return cb(null, 2);
+                }
+                function getFromCacheThrowsError(key, {}, cb) {
+                    return cb(new Error("cache get call failure for key:" + key), null);
+                }
+                beforeEach(function(done) {
+                    cache = caching({store: 'memory', ttl: opts.ttl, refreshThreshold: 8, tts: opts.tts, ignoreCacheErrors: false});
+                    memoryStoreStub.ttl = ttl2;
+                    sinon.spy(memoryStoreStub, 'ttl');
+                    sinon.spy(cache, 'checkRefreshThreshold');
+                    getCachedWidget(name, function(err, widget) {
+                        checkErr(err);
+                        assert.ok(widget);
 
+                        memoryStoreStub.get(key, function(err, result) {
+                            checkErr(err);
+                            assert.ok(result);
+                            memoryStoreStub.get = getFromCacheThrowsError;
+                            sinon.spy(memoryStoreStub, 'get');
+                            sinon.spy(memoryStoreStub, 'set');
+
+                            done();
+                        });
+                    });
+                });
+
+                afterEach(function() {
+                    memoryStoreStub.get.restore();
+                    memoryStoreStub.set.restore();
+                    memoryStoreStub.ttl.restore();
+                    cache.checkRefreshThreshold.restore();
+                });
+
+                it("should when stale, return cached item if the attempt to retrieve from the underlying service fails",
+
+                    function(done) {
+                        // var funcCalled = false;
+                        console.log('wrap call 2 :>> ');
+                        cache.wrap(key, function(cb) {
+                            console.log('wrapCall2 cb:>> ');
+                            // funcCalled = true;
+                            // assert.equal(memoryStoreStub.get.callCount, 0);
+                            assert.equal(memoryStoreStub.set.callCount, 0);
+                            methods.getWidgetFailure(name, function(err, result) {
+                                cb(err, result);
+                            });
+                        }, function(err) {
+                        // Wait for just a bit, to be sure that the callback is called.
+                            assert.equal(err.message, new Error("cache get call failure for key:" + key).message);
+                            done();
+                        });
+                    });
+            });
             context("using standard memorystore", function() {
                 beforeEach(function(done) {
                     getCachedWidget(name, function(err, widget) {
