@@ -16,6 +16,13 @@ var methods = {
             cb(null, {name: name});
         });
     },
+    getWidgetFailure: function(name, cb) {
+        console.log('Called getWidgetFailure :>> ');
+        process.nextTick(function() {
+            cb(new Error('Failed to retrieve: ' + '{name: ' + name + '}'));
+        });
+    },
+
     getMultiWidget: function(names, cb) {
         process.nextTick(function() {
             cb(null, names.map(function(name) { return {name: name}; }));
@@ -1503,6 +1510,7 @@ describe("caching", function() {
                         }, 500);
                     });
                 });
+
                 it("should call the work method when TTL < TTS", function(done) {
                     var funcCalled = false;
 
@@ -1569,27 +1577,6 @@ describe("caching", function() {
                             assert.equal(funcCalled, false);
                             assert.equal(memoryStoreStub.set.callCount, 0);
                             assert.equal(memoryStoreStub.get.callCount, 1);
-                            done();
-                        }, 500);
-                    });
-                });
-
-                it.skip("should return cached item when stale refresh attempt fails", function(done) {
-                    var funcCalled = false;
-                    cache.wrap(key, function(cb) {
-                        funcCalled = true;
-                        methods.getWidget(name, function(err, result) {
-                            cb(err, result);
-                        });
-                    }, function(err, widget) {
-                        // Wait for just a bit, to be sure that the callback is called.
-                        setTimeout(function() {
-                            checkErr(err);
-                            assert.deepEqual(widget, {name: name});
-                            assert.ok(memoryStoreStub.get.calledWith(key));
-                            assert.ok(memoryStoreStub.ttl.calledWith(key));
-                            assert.equal(funcCalled, true);
-                            assert.equal(memoryStoreStub.set.callCount, 1);
                             done();
                         }, 500);
                     });
@@ -1852,6 +1839,68 @@ describe("caching", function() {
                         });
                     });
             });
+
+            context("With TTS and subsequent attempt to refresh cache fails", function() {
+                function ttl2(key, cb) {
+                    console.log('called TTL2 :>> ');
+                    return cb(null, 2);
+                }
+                beforeEach(function(done) {
+                    cache = caching({store: 'memory', ttl: opts.ttl, refreshThreshold: 8, tts: opts.tts, ignoreCacheErrors: false});
+                    memoryStoreStub.ttl = ttl2;
+                    sinon.spy(memoryStoreStub, 'ttl');
+                    sinon.spy(cache, 'checkRefreshThreshold');
+                    getCachedWidget(name, function(err, widget) {
+                        checkErr(err);
+                        assert.ok(widget);
+
+                        memoryStoreStub.get(key, function(err, result) {
+                            checkErr(err);
+                            assert.ok(result);
+
+                            sinon.spy(memoryStoreStub, 'get');
+                            sinon.spy(memoryStoreStub, 'set');
+
+                            done();
+                        });
+                    });
+                });
+
+                afterEach(function() {
+                    memoryStoreStub.get.restore();
+                    memoryStoreStub.set.restore();
+                    memoryStoreStub.ttl.restore();
+                    cache.checkRefreshThreshold.restore();
+                });
+
+                it("should when stale, return cached item if the attempt to retrieve from the underlying service fails",
+
+                    function(done) {
+                        var funcCalled = false;
+                        console.log('wrap call 2 :>> ');
+                        cache.wrap(key, function(cb) {
+                            console.log('wrapCall2 cb:>> ');
+                            funcCalled = true;
+                            // assert.equal(memoryStoreStub.get.callCount, 0);
+                            assert.equal(memoryStoreStub.set.callCount, 0);
+                            methods.getWidgetFailure(name, function(err, result) {
+                                cb(err, result);
+                            });
+                        }, function(err, widget) {
+                        // Wait for just a bit, to be sure that the callback is called.
+                            setTimeout(function() {
+                                checkErr(err);
+                                assert.equal(funcCalled, true);
+                                assert.ok(widget);
+                                assert.equal(memoryStoreStub.get.callCount, 1);
+                                assert.equal(memoryStoreStub.ttl.callCount, 2);
+                                assert.equal(cache.checkRefreshThreshold.callCount, 1);
+                                done();
+                            }, 500);
+                        });
+                    });
+            });
+
             context("using standard memorystore", function() {
                 beforeEach(function(done) {
                     getCachedWidget(name, function(err, widget) {
