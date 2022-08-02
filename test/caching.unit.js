@@ -17,7 +17,7 @@ var methods = {
         });
     },
     getWidgetFailure: function(name, cb) {
-        console.log('Called getWidgetFailure :>> ');
+        // console.log('Called getWidgetFailure :>> ');
         process.nextTick(function() {
             cb(new Error('Failed to retrieve: ' + '{name: ' + name + '}'));
         });
@@ -1132,7 +1132,7 @@ describe("caching", function() {
             });
 
             function getCachedWidget(name, cb) {
-                console.log('wrapCall #1 :>> ');
+                // console.log('wrapCall #1 :>> ');
                 cache.wrap(key, function(cacheCb) {
                     methods.getWidget(name, cacheCb);
                 }, opts, cb);
@@ -1259,7 +1259,7 @@ describe("caching", function() {
             context("using tweaked memorystore, when result is already cached but expiring", function() {
                 beforeEach(function(done) {
                     memoryStoreStub.ttl = function(key, cb) {
-                        console.log('called ttl #1 :>> ');
+                        // console.log('called ttl #1 :>> ');
                         return cb(null, 1);
                     };
                     sinon.spy(memoryStoreStub, 'ttl');
@@ -1418,7 +1418,7 @@ describe("caching", function() {
 
             function getCachedWidget(name, cb) {
                 cache.wrap(key, function(cacheCb) {
-                    console.log('wrap call # 1 getCachedWidget :>> ');
+                    // console.log('wrap call # 1 getCachedWidget :>> ');
                     methods.getWidget(name, cacheCb);
                 }, opts, cb);
             }
@@ -1756,7 +1756,7 @@ describe("caching", function() {
 
             context("With Refresh Threshold and TTS", function() {
                 function ttl2(key, cb) {
-                    console.log('called TTL2 :>> ');
+                    // console.log('called TTL2 :>> ');
                     return cb(null, 2);
                 }
                 beforeEach(function(done) {
@@ -1791,7 +1791,7 @@ describe("caching", function() {
 
                     function(done) {
                         var funcCalled = false;
-                        console.log('wrap call 2 :>> ');
+                        // console.log('wrap call 2 :>> ');
                         cache.wrap(key, function(cb) {
                             funcCalled = true;
                             methods.getWidget(name, function(err, result) {
@@ -1817,7 +1817,7 @@ describe("caching", function() {
                     function(done) {
                         cache.tts = 1;
                         var funcCalled = false;
-                        console.log('wrap call 2 :>> ');
+                        // console.log('wrap call 2 :>> ');
                         cache.wrap(key, function(cb) {
                             funcCalled = true;
                             methods.getWidget(name, function(err, result) {
@@ -1842,7 +1842,7 @@ describe("caching", function() {
 
             context("With TTS and subsequent attempt to refresh cache fails", function() {
                 function ttl2(key, cb) {
-                    console.log('called TTL2 :>> ');
+                    // console.log('called TTL2 :>> ');
                     return cb(null, 2);
                 }
                 beforeEach(function(done) {
@@ -1877,9 +1877,9 @@ describe("caching", function() {
 
                     function(done) {
                         var funcCalled = false;
-                        console.log('wrap call 2 :>> ');
+                        // console.log('wrap call 2 :>> ');
                         cache.wrap(key, function(cb) {
-                            console.log('wrapCall2 cb:>> ');
+                            // console.log('wrapCall2 cb:>> ');
                             funcCalled = true;
                             // assert.equal(memoryStoreStub.get.callCount, 0);
                             assert.equal(memoryStoreStub.set.callCount, 0);
@@ -1902,7 +1902,7 @@ describe("caching", function() {
             });
             context("With TTS and subsequent attempt to refresh cache fails, as does cache get", function() {
                 function ttl2(key, cb) {
-                    console.log('called TTL2 :>> ');
+                    // console.log('called TTL2 :>> ');
                     return cb(null, 2);
                 }
                 function getFromCacheThrowsError(key, {}, cb) {
@@ -1940,9 +1940,9 @@ describe("caching", function() {
 
                     function(done) {
                         // var funcCalled = false;
-                        console.log('wrap call 2 :>> ');
+                        // console.log('wrap call 2 :>> ');
                         cache.wrap(key, function(cb) {
-                            console.log('wrapCall2 cb:>> ');
+                            // console.log('wrapCall2 cb:>> ');
                             // funcCalled = true;
                             // assert.equal(memoryStoreStub.get.callCount, 0);
                             assert.equal(memoryStoreStub.set.callCount, 0);
