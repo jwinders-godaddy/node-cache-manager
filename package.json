@@ -1,6 +1,6 @@
 {
-  "name": "cache-manager",
-  "version": "4.1.0",
+  "name": "@px/cache-manager",
+  "version": "1.0.2",
   "description": "Cache module for Node.js",
   "main": "index.js",
   "files": [
@@ -8,8 +8,12 @@
     "/examples",
     "/lib"
   ],
+  "publishConfig": {
+    "registry": "https://artifactory.secureserver.net/artifactory/api/npm/npm-px-team-repo-local/"
+  },
   "scripts": {
-    "test": "make"
+    "test": "make",
+    "beta": "npm test && npm version prerelease --preid=beta && npm publish --tag beta"
   },
   "repository": {
     "type": "git",
@@ -26,6 +30,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "3.2.3",
+    "elastic-apm-node": "^3.37.0",
     "lodash.clonedeep": "^4.5.0",
     "lru-cache": "^7.10.1"
   },
